@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Recognition System - Register</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 500px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+        
+        input[type="text"],
+        input[type="password"],
+        input[type="checkbox"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        input[type="text"]:focus,
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 5px rgba(102, 126, 234, 0.1);
+        }
+        
+        input[type="checkbox"] {
+            width: auto;
+            margin-right: 8px;
+            cursor: pointer;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .checkbox-group label {
+            margin: 0;
+            cursor: pointer;
+            flex: 1;
+        }
+        
+        .password-group {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        
+        .password-group input {
+            flex: 1;
+        }
+        
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #667eea;
+            font-size: 20px;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .password-toggle:hover {
+            color: #764ba2;
+        }
+        
+        .camera-section {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 5px;
+            display: none;
+        }
+        
+        .camera-section.show {
+            display: block;
+        }
+        
+        video {
+            width: 100%;
+            border-radius: 5px;
+            background: #000;
+            margin-bottom: 15px;
+        }
+        
+        #canvas {
+            display: none;
+        }
+        
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        button {
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            grid-column: 1 / -1;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #ddd;
+            color: #333;
+        }
+        
+        .btn-secondary:hover {
+            background: #ccc;
+        }
+        
+        .btn-secondary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .status {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: 500;
+            display: none;
+        }
+        
+        .status.success {
+            background: #efe;
+            color: #3c3;
+            border-left: 4px solid #3c3;
+        }
+        
+        .status.error {
+            background: #fee;
+            color: #c33;
+            border-left: 4px solid #c33;
+        }
+        
+        .status.info {
+            background: #eef;
+            color: #33c;
+            border-left: 4px solid #33c;
+        }
+        
+        .link-group {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        a:hover {
+            text-decoration: underline;
+        }
+        
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid #c33;
+        }
+        
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .btn-register {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            grid-column: 1 / -1;
+        }
+        
+        .btn-register:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📝 Create Account</h1>
+        
+        {% if error %}
+            <div class="error">{{ error }}</div>
+        {% endif %}
+        
+        <form id="registerForm" method="POST">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required placeholder="Choose a username">
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password</label>
+                <div class="password-group">
+                    <input type="password" id="password" name="password" required placeholder="Enter your password">
+                    <button type="button" class="password-toggle" onclick="togglePassword('password')">👁️</button>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="confirm_password">Confirm Password</label>
+                <div class="password-group">
+                    <input type="password" id="confirm_password" name="confirm_password" required placeholder="Confirm your password">
+                    <button type="button" class="password-toggle" onclick="togglePassword('confirm_password')">👁️</button>
+                </div>
+            </div>
+            
+            <div class="checkbox-group">
+                <input type="checkbox" id="registerFace" name="register_face">
+                <label for="registerFace">Register face for biometric login</label>
+            </div>
+            
+            <div id="cameraSection" class="camera-section">
+                <h3 style="margin-bottom: 15px; color: #333;">Face Registration</h3>
+                <video id="video" autoplay playsinline></video>
+                <img id="preview" style="display:none; width:100%; border-radius:5px; margin-top:10px;" />
+                <canvas id="canvas"></canvas>
+                
+                <div class="controls">
+                    <button type="button" class="btn-primary" id="startBtn" onclick="startCamera()">Start Camera</button>
+                    <button type="button" class="btn-secondary" id="captureBtn" onclick="captureFrame()" disabled>Capture Face</button>
+                </div>
+                
+                <div id="status" class="status"></div>
+            </div>
+            
+            <input type="hidden" id="faceEncoding" name="face_encoding">
+            
+            <div class="button-group">
+                <button type="submit" class="btn-register">Create Account</button>
+                <button type="button" class="btn-secondary" onclick="window.location.href='/login'">Back to Login</button>
+            </div>
+        </form>
+        
+        <div class="link-group">
+            <p>Already have an account? <a href="/login">Login here</a></p>
+        </div>
+    </div>
+    
+    <script>
+        const registerFaceCheckbox = document.getElementById('registerFace');
+        const cameraSection = document.getElementById('cameraSection');
+        let video = document.getElementById('video');
+        let canvas = document.getElementById('canvas');
+        let ctx = canvas.getContext('2d');
+        let stream = null;
+        let frameCount = 0;
+        let capturedEncodings = [];
+        let autoCapturing = false;
+        let autoCaptureInterval = null;
+        const REQUIRED_FRAMES = 5;
+        
+        registerFaceCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                cameraSection.classList.add('show');
+            } else {
+                cameraSection.classList.remove('show');
+                stopCamera();
+                document.getElementById('faceEncoding').value = '';
+                frameCount = 0;
+                capturedEncodings = [];
+            }
+        });
+        
+        async function startCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: 'user',
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    } 
+                });
+                video.style.display = 'block';
+                video.srcObject = stream;
+                document.getElementById('startBtn').textContent = 'Stop Camera';
+                document.getElementById('startBtn').onclick = stopCamera;
+                document.getElementById('captureBtn').disabled = false;
+                showStatus('Camera started. Face the camera directly. Click "Capture Face" or wait for auto-detection.', 'info');
+                frameCount = 0;
+                capturedEncodings = [];
+                
+                // Start auto-capture after 1 second
+                setTimeout(() => {
+                    startAutoCapture();
+                }, 1000);
+            } catch (error) {
+                showStatus('Camera error: ' + error.message + '. Please allow camera access.', 'error');
+            }
+        }
+        
+        function startAutoCapture() {
+            if (autoCapturing) return;
+            autoCapturing = true;
+            autoCaptureInterval = setInterval(() => {
+                if (frameCount < REQUIRED_FRAMES && stream) {
+                    captureFrame(true);
+                } else {
+                    stopAutoCapture();
+                }
+            }, 1200);
+        }
+        
+        function stopAutoCapture() {
+            autoCapturing = false;
+            if (autoCaptureInterval) {
+                clearInterval(autoCaptureInterval);
+                autoCaptureInterval = null;
+            }
+        }
+        
+        function captureFrame(isAuto = false) {
+            if (!stream) return;
+            
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0);
+            
+            canvas.toBlob(async (blob) => {
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    try {
+                        const response = await fetch('/api/capture-face', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ image: e.target.result })
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            if (data.preview) {
+                                const previewImg = document.getElementById('preview');
+                                previewImg.src = data.preview;
+                                previewImg.style.display = 'block';
+                            }
+
+                            frameCount++;
+                            capturedEncodings.push(data.encoding);
+                            showStatus(`Face detected (${frameCount}/${REQUIRED_FRAMES}) - Keep looking at camera`, 'success');
+
+                            if (frameCount >= REQUIRED_FRAMES) {
+                                stopAutoCapture();
+                                stopCamera();
+                                processFaceData();
+                            }
+                        } else {
+                            if (!isAuto) {
+                                showStatus('Error: ' + data.error, 'error');
+                            }
+                        }
+                    } catch (error) {
+                        if (!isAuto) {
+                            showStatus('Error: ' + error.message, 'error');
+                        }
+                    }
+                };
+                reader.readAsDataURL(blob);
+            }, 'image/jpeg');
+        }
+        
+        function processFaceData() {
+            if (capturedEncodings.length === 0) {
+                showStatus('No face was captured. Please try again.', 'error');
+                return;
+            }
+            
+            // Average the encodings
+            let avgEncoding = new Array(capturedEncodings[0].length).fill(0);
+            for (let enc of capturedEncodings) {
+                for (let i = 0; i < enc.length; i++) {
+                    avgEncoding[i] += enc[i];
+                }
+            }
+            for (let i = 0; i < avgEncoding.length; i++) {
+                avgEncoding[i] /= capturedEncodings.length;
+            }
+            
+            document.getElementById('faceEncoding').value = JSON.stringify(avgEncoding);
+            showStatus('Face captured successfully! You can now create your account.', 'success');
+        }
+        
+        function stopCamera() {
+            stopAutoCapture();
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+                video.style.display = 'none';
+            }
+            document.getElementById('startBtn').textContent = 'Start Camera';
+            document.getElementById('startBtn').onclick = startCamera;
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('captureBtn').disabled = true;
+        }
+        
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = 'status ' + type;
+            statusDiv.style.display = 'block';
+        }
+        
+        document.getElementById('registerForm').onsubmit = function(e) {
+            if (registerFaceCheckbox.checked && !document.getElementById('faceEncoding').value) {
+                e.preventDefault();
+                showStatus('Please capture your face first. Face registration is enabled but no face was detected.', 'error');
+                return false;
+            }
+            return true;
+        };
+        
+        function togglePassword(fieldId) {
+            const field = document.getElementById(fieldId);
+            const button = event.target;
+            
+            if (field.type === 'password') {
+                field.type = 'text';
+                button.textContent = '🙈';
+            } else {
+                field.type = 'password';
+                button.textContent = '👁️';
+            }
+        }
+        
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', function() {
+            stopCamera();
+        });
+    </script>
+</body>
+</html>

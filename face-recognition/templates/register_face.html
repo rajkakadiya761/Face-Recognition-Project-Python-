@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register Face - Face Recognition System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 500px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .camera-section {
+            margin: 30px 0;
+        }
+        
+        video {
+            width: 100%;
+            border-radius: 5px;
+            background: #000;
+            margin-bottom: 15px;
+        }
+        
+        #canvas {
+            display: none;
+        }
+        
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        button {
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            grid-column: 1 / -1;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #ddd;
+            color: #333;
+        }
+        
+        .btn-secondary:hover {
+            background: #ccc;
+        }
+        
+        .btn-secondary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: 500;
+            display: none;
+        }
+        
+        .status.success {
+            background: #efe;
+            color: #3c3;
+            border-left: 4px solid #3c3;
+        }
+        
+        .status.error {
+            background: #fee;
+            color: #c33;
+            border-left: 4px solid #c33;
+        }
+        
+        .status.info {
+            background: #eef;
+            color: #33c;
+            border-left: 4px solid #33c;
+        }
+        
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid #c33;
+        }
+        
+        .success {
+            background: #efe;
+            color: #3c3;
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid #3c3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>👤 Face Registration</h1>
+        <p class="subtitle">Register or update your face for biometric login</p>
+        
+        {% if error %}
+            <div class="error">{{ error }}</div>
+        {% endif %}
+        
+        {% if success %}
+            <div class="success">{{ success }}</div>
+        {% endif %}
+        
+        <form id="faceForm" method="POST">
+            <div class="camera-section">
+                <video id="video" autoplay playsinline></video>
+                <img id="preview" style="display:none; width:100%; border-radius:5px; margin-top:10px;" />
+                <canvas id="canvas"></canvas>
+                
+                <div class="controls">
+                    <button type="button" class="btn-primary" id="startBtn" onclick="startCamera()">Start Camera</button>
+                    <button type="button" class="btn-secondary" id="captureBtn" onclick="captureFrame()" disabled>Capture Face</button>
+                </div>
+            </div>
+            
+            <div id="status" class="status"></div>
+            
+            <input type="hidden" id="faceEncoding" name="face_encoding">
+            
+            <div class="controls">
+                <button type="submit" class="btn-primary" id="registerBtn" disabled>Register Face</button>
+                <button type="button" class="btn-secondary" onclick="window.location.href='/dashboard'">Back to Dashboard</button>
+            </div>
+        </form>
+    </div>
+    
+    <script>
+        let video = document.getElementById('video');
+        let canvas = document.getElementById('canvas');
+        let ctx = canvas.getContext('2d');
+        let stream = null;
+        let frameCount = 0;
+        let capturedEncodings = [];
+        
+        async function startCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: 'user',
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    } 
+                });
+                video.srcObject = stream;
+                video.style.display = 'block';
+                document.getElementById('startBtn').disabled = true;
+                document.getElementById('captureBtn').disabled = false;
+                showStatus('Camera started. Click "Capture Face" to register.', 'info');
+                frameCount = 0;
+                capturedEncodings = [];
+            } catch (error) {
+                showStatus('Camera error: ' + error.message, 'error');
+            }
+        }
+        
+        function captureFrame() {
+            if (!stream) return;
+            
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0);
+            
+            canvas.toBlob(async (blob) => {
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    try {
+                        const response = await fetch('/api/capture-face', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ image: e.target.result })
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            if (data.preview) {
+                                const previewImg = document.getElementById('preview');
+                                previewImg.src = data.preview;
+                                previewImg.style.display = 'block';
+                            }
+
+                            frameCount++;
+                            capturedEncodings.push(data.encoding);
+                            showStatus(`Face detected (${frameCount}/5)`, 'success');
+
+                            if (frameCount >= 5) {
+                                stopCamera();
+                                processFaceData();
+                            }
+                        } else {
+                            showStatus('Error: ' + data.error, 'error');
+                        }
+                    } catch (error) {
+                        showStatus('Error: ' + error.message, 'error');
+                    }
+                };
+                reader.readAsDataURL(blob);
+            }, 'image/jpeg');
+        }
+        
+        function processFaceData() {
+            if (capturedEncodings.length === 0) return;
+            
+            // Average the encodings
+            let avgEncoding = new Array(capturedEncodings[0].length).fill(0);
+            for (let enc of capturedEncodings) {
+                for (let i = 0; i < enc.length; i++) {
+                    avgEncoding[i] += enc[i];
+                }
+            }
+            for (let i = 0; i < avgEncoding.length; i++) {
+                avgEncoding[i] /= capturedEncodings.length;
+            }
+            
+            document.getElementById('faceEncoding').value = JSON.stringify(avgEncoding);
+            document.getElementById('registerBtn').disabled = false;
+            showStatus('Face captured successfully! Click "Register Face" to save.', 'success');
+        }
+        
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                video.style.display = 'none';
+            }
+        }
+        
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = 'status ' + type;
+            statusDiv.style.display = 'block';
+        }
+        
+        document.getElementById('faceForm').onsubmit = function(e) {
+            if (!document.getElementById('faceEncoding').value) {
+                e.preventDefault();
+                showStatus('Please capture your face first', 'error');
+            }
+        };
+    </script>
+</body>
+</html>
